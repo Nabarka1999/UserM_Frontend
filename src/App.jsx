@@ -11,6 +11,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
+  const [error, setError] = useState('');
 
   // Fetch Users
   const fetchUsers = async () => {
@@ -24,13 +25,22 @@ function App() {
 
   // Add User
   const addUser = async () => {
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newUser.email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     try {
       await axios.post(apiUrl, newUser);
       fetchUsers();
       setNewUser({ firstName: '', lastName: '', email: '', department: '' });
       setIsModalOpen(false);
+      setError('');
     } catch (error) {
       console.error('Error adding user:', error);
+      setError('Failed to add user. Please try again.');
     }
   };
 
@@ -58,6 +68,7 @@ function App() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     if (editingUser) {
       setEditingUser((prev) => ({ ...prev, [name]: value }));
     } else {
@@ -130,6 +141,8 @@ function App() {
         <div className="modal">
           <div className="modal-content">
             <h2>{editingUser ? 'Edit User' : 'Add User'}</h2>
+
+            {error && <p className="error-message">{error}</p>}
 
             <label>First Name:</label>
             <input
